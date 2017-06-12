@@ -1,0 +1,505 @@
+---
+swagger: "2.0"
+info:
+  description: "Clash of Cubicles is multiplayer RPG which simulates the Kafka-esque\
+    \ aspects of the cubicle rat-race, and the growth and reward of advancing up the\
+    \ hamster wheel faster than your peers."
+  version: "1.0.0"
+  title: "Clash of Cubicles"
+  termsOfService: "http://swagger.io/terms/"
+  contact:
+    email: "greg@luzene.com"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "clashofcubicles.com"
+basePath: "/v1"
+tags:
+- name: "workers"
+  description: "The Player"
+- name: "offices"
+  description: "The Environment"
+- name: "tasks"
+  description: "Work to advance your career!"
+schemes:
+- "http"
+paths:
+  /tasks:
+    get:
+      tags:
+      - "tasks"
+      summary: "get tasks"
+      description: "get tasks"
+      operationId: "get_task"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "filter"
+        in: "query"
+        description: "filter results"
+        required: false
+      responses:
+        404:
+          description: "Not found"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+      security:
+      - cubicle_auth:
+        - "read:tasks"
+      x-swagger-router-controller: "clashofcubicles.controllers.tasks_controller"
+    post:
+      tags:
+      - "tasks"
+      summary: "create tasks"
+      description: "create tasks"
+      operationId: "create_task"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "tasks to create"
+        required: true
+        schema:
+          $ref: "#/definitions/ApiResponse"
+      responses:
+        405:
+          schema:
+            description: "Invalid input"
+            $ref: "#/definitions/ApiResponse"
+      x-swagger-router-controller: "clashofcubicles.controllers.tasks_controller"
+  /tasks/{taskId}:
+    get:
+      tags:
+      - "tasks"
+      summary: "get task by id"
+      description: "get task by id"
+      operationId: "get_task_by_id"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "taskId"
+        in: "path"
+        description: "task id"
+        required: true
+      responses:
+        404:
+          schema:
+            description: "not found"
+            $ref: "#/definitions/ApiResponse"
+      x-swagger-router-controller: "clashofcubicles.controllers.tasks_controller"
+  /workers:
+    post:
+      tags:
+      - "workers"
+      summary: "create a worker"
+      description: "create a worker"
+      operationId: "add_worker"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "new worker object"
+        required: true
+        schema:
+          $ref: "#/definitions/Worker"
+      responses:
+        405:
+          description: "Invalid input"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+      x-swagger-router-controller: "clashofcubicles.controllers.workers_controller"
+    put:
+      tags:
+      - "workers"
+      summary: "Update an existing worker"
+      description: ""
+      operationId: "update_worker"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "api_key"
+        in: "header"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "worker to update"
+        required: true
+        schema:
+          $ref: "#/definitions/Worker"
+      responses:
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "worker not found"
+        405:
+          description: "Validation exception"
+      x-swagger-router-controller: "clashofcubicles.controllers.workers_controller"
+  /workers/{workerId}:
+    get:
+      tags:
+      - "workers"
+      summary: "Find worker by ID"
+      description: "Returns a single worker"
+      operationId: "get_worker_by_id"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "workerId"
+        in: "path"
+        description: "ID of worker to return"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Worker"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "worker not found"
+      security:
+      - api_key: []
+      x-swagger-router-controller: "clashofcubicles.controllers.workers_controller"
+    delete:
+      tags:
+      - "workers"
+      summary: "Deletes a worker"
+      description: ""
+      operationId: "delete_worker"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "api_key"
+        in: "header"
+        required: false
+        type: "string"
+      - name: "workerId"
+        in: "path"
+        description: "worker id to delete"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "worker not found"
+      security:
+      - cubicle_auth:
+        - "write:workers"
+        - "read:workers"
+      x-swagger-router-controller: "clashofcubicles.controllers.workers_controller"
+  /user:
+    post:
+      tags:
+      - "user"
+      summary: "Create user"
+      description: "create user."
+      operationId: "create_user"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Created user object"
+        required: true
+        schema:
+          $ref: "#/definitions/User"
+      responses:
+        default:
+          description: "successful operation"
+      x-swagger-router-controller: "clashofcubicles.controllers.user_controller"
+  /user/login:
+    get:
+      tags:
+      - "user"
+      summary: "Logs user into the system"
+      description: ""
+      operationId: "login_user"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - name: "username"
+        in: "query"
+        description: "The user name for login"
+        required: true
+        type: "string"
+      - name: "password"
+        in: "query"
+        description: "The password for login in clear text"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "string"
+          headers:
+            X-Rate-Limit:
+              type: "integer"
+              format: "int32"
+              description: "calls per hour allowed by the user"
+            X-Expires-After:
+              type: "string"
+              format: "date-time"
+              description: "date in UTC when token expires"
+        400:
+          description: "Invalid username/password supplied"
+      x-swagger-router-controller: "clashofcubicles.controllers.user_controller"
+  /user/logout:
+    get:
+      tags:
+      - "user"
+      summary: "Logs out current logged in user session"
+      description: ""
+      operationId: "logout_user"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters: []
+      responses:
+        default:
+          description: "successful operation"
+      x-swagger-router-controller: "clashofcubicles.controllers.user_controller"
+  /user/{username}:
+    get:
+      tags:
+      - "user"
+      summary: "Get user by user name"
+      description: ""
+      operationId: "get_user_by_name"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "username"
+        in: "path"
+        description: "The name that needs to be fetched. Use user1 for testing. "
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/User"
+        400:
+          description: "Invalid username supplied"
+        404:
+          description: "User not found"
+      x-swagger-router-controller: "clashofcubicles.controllers.user_controller"
+    put:
+      tags:
+      - "user"
+      summary: "Updated user"
+      description: "This can only be done by the logged in user."
+      operationId: "update_user"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "username"
+        in: "path"
+        description: "name that need to be updated"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "Updated user object"
+        required: true
+        schema:
+          $ref: "#/definitions/User"
+      responses:
+        400:
+          description: "Invalid user supplied"
+        404:
+          description: "User not found"
+      x-swagger-router-controller: "clashofcubicles.controllers.user_controller"
+    delete:
+      tags:
+      - "user"
+      summary: "Delete user"
+      description: "This can only be done by the logged in user."
+      operationId: "delete_user"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "username"
+        in: "path"
+        description: "The name that needs to be deleted"
+        required: true
+        type: "string"
+      responses:
+        400:
+          description: "Invalid username supplied"
+        404:
+          description: "User not found"
+      x-swagger-router-controller: "clashofcubicles.controllers.user_controller"
+securityDefinitions:
+  api_key:
+    type: "apiKey"
+    name: "api_key"
+    in: "header"
+  cubicle_auth:
+    type: "oauth2"
+    authorizationUrl: "https://clashofcubicles/oauth/dialog"
+    flow: "implicit"
+    scopes:
+      write:workers: "modify workers"
+      read:workers: "read workers"
+      promote:workers: "promote workers"
+      write:tasks: "write tasks"
+      read:tasks: "read tasks"
+      complete:tasks: "complete tasks"
+      review:tasks: "review tasks"
+      assign:tasks: "assign tasks"
+definitions:
+  Office:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      workers:
+        type: "array"
+        items:
+          $ref: "#/definitions/Worker"
+      taskTypes:
+        type: "array"
+        items:
+          $ref: "#/definitions/TaskType"
+  TaskType:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      description:
+        type: "string"
+      setupSgf:
+        type: "string"
+  Task:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      worker:
+        description: "worker who assigned the task"
+        $ref: "#/definitions/Worker"
+      assignedWorkers:
+        type: "array"
+        items:
+          $ref: "#/definitions/Worker"
+      description:
+        type: "string"
+      expiry:
+        type: "string"
+        format: "date-time"
+      sgfState:
+        type: "string"
+        description: "SGF representation of task state"
+      status:
+        type: "string"
+        description: "Task Status"
+        enum:
+        - "backlog"
+        - "started"
+        - "review"
+        - "done"
+        - "rejected"
+        - "failed"
+  User:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      username:
+        type: "string"
+      firstName:
+        type: "string"
+      lastName:
+        type: "string"
+      email:
+        type: "string"
+        format: "email"
+      password:
+        type: "string"
+      phone:
+        type: "string"
+      workers:
+        type: "array"
+        items:
+          $ref: "#/definitions/Worker"
+  Worker:
+    type: "object"
+    required:
+    - "name"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      name:
+        type: "string"
+        example: "bill williams"
+      owner:
+        $ref: "#/definitions/User"
+      tasks:
+        type: "array"
+        items:
+          $ref: "#/definitions/Task"
+      office:
+        $ref: "#/definitions/Office"
+      messagesReceived:
+        type: "array"
+        items:
+          $ref: "#/definitions/Message"
+      messagesSent:
+        type: "array"
+        items:
+          $ref: "#/definitions/Message"
+  Message:
+    type: "object"
+    required:
+    - "id"
+    - "recipients"
+    - "text"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      recipients:
+        type: "array"
+        items:
+          $ref: "#/definitions/Worker"
+      sender:
+        $ref: "#/definitions/Message"
+      text:
+        type: "string"
+      attachments:
+        type: "array"
+        items:
+          $ref: "#/definitions/Task"
+  ApiResponse:
+    type: "object"
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+      type:
+        type: "string"
+      message:
+        type: "string"
+externalDocs:
+  description: "Find out more about Swagger"
+  url: "http://swagger.io"
